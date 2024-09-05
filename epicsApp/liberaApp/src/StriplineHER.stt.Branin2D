@@ -1,0 +1,76 @@
+program StriplineHER
+
+%%#include <stdio.h>
+%%#include <stdlib.h>
+%%#include <assert.h>
+%%#include <time.h>
+%%#include <math.h>
+%%#include <unistd.h>
+%%#include "MT.h"
+
+double TESTX, TESTY, TESTZ;
+/*--- HER (D8) ---*/
+assign TESTX to "TEST:X";
+assign TESTY to "TEST:Y";
+assign TESTZ to "TEST:Z";
+
+monitor TESTX;
+monitor TESTY;
+
+%{
+  double testx;
+  double testy;
+  double testz;
+
+  double Uniform(void)
+  {
+    return genrand_real3();
+  }
+
+  double rand_Lnormal(double mu, double sigma)
+  {
+    double z= mu + sigma*sqrt(-2.0*log(Uniform()))*sin(2.0*M_PI*Uniform());//gauss random number
+    return exp(z);
+  }
+}%
+
+ss her_stripline {
+
+  /*--- Initialization ---*/
+  state init {
+    when ()
+    {
+      pvGet(TESTX);
+      pvGet(TESTY);
+
+      printf("StriplineHER initialization done.\n");
+
+      %{
+        init_genrand((unsigned)time(NULL));
+      }%
+    }
+    state fit
+  }
+
+  /*--- Fit ---*/
+  state fit {
+    when ()
+    {
+      testx = TESTX;
+      testy = TESTY;
+
+      %{
+	testz = pow(testy - 5.1/(4.*pow(M_PI,2.)) * pow(testx,2.) + 5./M_PI * testx - 6., 2.) + 10 * (1. - 1./(8.*M_PI)) * cos(testx) + 10. + rand_Lnormal(0., 1.e-3);
+	//testz = pow(testy - 5.1/(4.*pow(M_PI,2.)) * pow(testx,2.) + 5./M_PI * testx - 6., 2.) + 10 * (1. - 1./(8.*M_PI)) * cos(testx) + 10.;
+      }%
+
+      TESTZ = testz;
+      pvPut(TESTZ);
+
+      %{
+        usleep(0.1e+6);
+      }%
+    }
+    state fit
+  }
+}

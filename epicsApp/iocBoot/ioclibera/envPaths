@@ -1,0 +1,2 @@
+epicsEnvSet("IOC","ioclibera")
+epicsEnvSet("TOP","/home/arima/work/2024/TestFunction2/epicsApp")
