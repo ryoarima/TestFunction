@@ -18,5 +18,4 @@ StriplineHER.o: StriplineHER.c \
  /home/arima/local/src/epics/base/../modules/soft/seq-2.2.8/include/seq_release.h \
  /home/arima/local/src/epics/base/../modules/soft/seq-2.2.8/include/seq_prim_types.h \
  /home/arima/local/src/epics/base/../modules/soft/seq-2.2.8/include/seq_mask.h \
- ../MT.h ../hartmann6d.h \
- /home/arima/local/src/epics/base/include/epicsExport.h
+ ../MT.h /home/arima/local/src/epics/base/include/epicsExport.h

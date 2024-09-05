@@ -19,17 +19,11 @@
 #include <unistd.h>
 # line 9 "../StriplineHER.stt"
 #include "MT.h"
-# line 10 "../StriplineHER.stt"
-#include "hartmann6d.h"
-# line 29 "../StriplineHER.stt"
+# line 20 "../StriplineHER.stt"
 
-  double x0;
-  double x1;
-  double x2;
-  double x3;
-  double x4;
-  double x5;
-  double y;
+  double testx;
+  double testy;
+  double testz;
 
   double Uniform(void)
   {
@@ -38,26 +32,18 @@
 
   double rand_Lnormal(double mu, double sigma)
   {
-    double y= mu + sigma*sqrt(-2.0*log(Uniform()))*sin(2.0*M_PI*Uniform());//gauss random number
-    return exp(y);
+    double z= mu + sigma*sqrt(-2.0*log(Uniform()))*sin(2.0*M_PI*Uniform());//gauss random number
+    return exp(z);
   }
 
 
 /* Variable declarations */
-# line 12 "../StriplineHER.stt"
-static	double X0;
-# line 12 "../StriplineHER.stt"
-static	double X1;
-# line 12 "../StriplineHER.stt"
-static	double X2;
-# line 12 "../StriplineHER.stt"
-static	double X3;
-# line 12 "../StriplineHER.stt"
-static	double X4;
-# line 12 "../StriplineHER.stt"
-static	double X5;
-# line 12 "../StriplineHER.stt"
-static	double Y;
+# line 11 "../StriplineHER.stt"
+static	double TESTX;
+# line 11 "../StriplineHER.stt"
+static	double TESTY;
+# line 11 "../StriplineHER.stt"
+static	double TESTZ;
 
 
 /* Function declarations */
@@ -90,23 +76,15 @@ static void seqg_action_her_stripline_0_init(SS_ID seqg_env, int seqg_trn, int *
 	{
 	case 0:
 		{
-# line 56 "../StriplineHER.stt"
-			seq_pvGetTmo(seqg_env, 0/*X0*/, DEFAULT, DEFAULT_TIMEOUT);
-# line 57 "../StriplineHER.stt"
-			seq_pvGetTmo(seqg_env, 1/*X1*/, DEFAULT, DEFAULT_TIMEOUT);
-# line 58 "../StriplineHER.stt"
-			seq_pvGetTmo(seqg_env, 2/*X2*/, DEFAULT, DEFAULT_TIMEOUT);
-# line 59 "../StriplineHER.stt"
-			seq_pvGetTmo(seqg_env, 3/*X3*/, DEFAULT, DEFAULT_TIMEOUT);
-# line 60 "../StriplineHER.stt"
-			seq_pvGetTmo(seqg_env, 4/*X4*/, DEFAULT, DEFAULT_TIMEOUT);
-# line 61 "../StriplineHER.stt"
-			seq_pvGetTmo(seqg_env, 5/*X5*/, DEFAULT, DEFAULT_TIMEOUT);
-# line 63 "../StriplineHER.stt"
+# line 43 "../StriplineHER.stt"
+			seq_pvGetTmo(seqg_env, 0/*TESTX*/, DEFAULT, DEFAULT_TIMEOUT);
+# line 44 "../StriplineHER.stt"
+			seq_pvGetTmo(seqg_env, 1/*TESTY*/, DEFAULT, DEFAULT_TIMEOUT);
+# line 46 "../StriplineHER.stt"
 			printf("StriplineHER initialization done.\n");
 			
-	  init_genrand((unsigned)time(NULL));
-	
+        init_genrand((unsigned)time(NULL));
+      
 		}
 		return;
 	}
@@ -133,29 +111,21 @@ static void seqg_action_her_stripline_0_fit(SS_ID seqg_env, int seqg_trn, int *s
 	{
 	case 0:
 		{
-# line 76 "../StriplineHER.stt"
-			x0 = X0;
-# line 77 "../StriplineHER.stt"
-			x1 = X1;
-# line 78 "../StriplineHER.stt"
-			x2 = X2;
-# line 79 "../StriplineHER.stt"
-			x3 = X3;
-# line 80 "../StriplineHER.stt"
-			x4 = X4;
-# line 81 "../StriplineHER.stt"
-			x5 = X5;
+# line 59 "../StriplineHER.stt"
+			testx = TESTX;
+# line 60 "../StriplineHER.stt"
+			testy = TESTY;
 			
-	  y  = hartmann6d(x0, x1, x2, x3, x4, x5);
-	  y += rand_Lnormal(0., 1.e-3);
-	
-# line 88 "../StriplineHER.stt"
-			Y = y;
-# line 89 "../StriplineHER.stt"
-			seq_pvPutTmo(seqg_env, 6/*Y*/, DEFAULT, DEFAULT_TIMEOUT);
+	testz = pow(testx - 1., 2.) + 100 * pow(testy - pow(testx,2.),2.) + rand_Lnormal(0., 1.e-3);
+	//testz = pow(testy - 5.1/(4.*pow(M_PI,2.)) * pow(testx,2.) + 5./M_PI * testx - 6., 2.) + 10 * (1. - 1./(8.*M_PI)) * cos(testx) + 10.;
+      
+# line 67 "../StriplineHER.stt"
+			TESTZ = testz;
+# line 68 "../StriplineHER.stt"
+			seq_pvPutTmo(seqg_env, 2/*TESTZ*/, DEFAULT, DEFAULT_TIMEOUT);
 			
-	     usleep(0.01e+6);
-	   
+        usleep(0.1e+6);
+      
 		}
 		return;
 	}
@@ -168,13 +138,9 @@ static void seqg_action_her_stripline_0_fit(SS_ID seqg_env, int seqg_trn, int *s
 /* Channel table */
 static seqChan seqg_chans[] = {
 	/* chName, offset, varName, varType, count, eventNum, efId, monitored, queueSize, queueIndex */
-	{"TEST:X0", (size_t)&X0, "X0", P_DOUBLE, 1, 1, 0, 1, 0, 0},
-	{"TEST:X1", (size_t)&X1, "X1", P_DOUBLE, 1, 2, 0, 1, 0, 0},
-	{"TEST:X2", (size_t)&X2, "X2", P_DOUBLE, 1, 3, 0, 1, 0, 0},
-	{"TEST:X3", (size_t)&X3, "X3", P_DOUBLE, 1, 4, 0, 1, 0, 0},
-	{"TEST:X4", (size_t)&X4, "X4", P_DOUBLE, 1, 5, 0, 1, 0, 0},
-	{"TEST:X5", (size_t)&X5, "X5", P_DOUBLE, 1, 6, 0, 1, 0, 0},
-	{"TEST:Y", (size_t)&Y, "Y", P_DOUBLE, 1, 7, 0, 0, 0, 0},
+	{"TEST:X", (size_t)&TESTX, "TESTX", P_DOUBLE, 1, 1, 0, 1, 0, 0},
+	{"TEST:Y", (size_t)&TESTY, "TESTY", P_DOUBLE, 1, 2, 0, 1, 0, 0},
+	{"TEST:Z", (size_t)&TESTZ, "TESTZ", P_DOUBLE, 1, 3, 0, 0, 0, 0},
 };
 
 /* Event masks for state set "her_stripline" */
@@ -221,7 +187,7 @@ seqProgram StriplineHER = {
 	/* magic number */      2002008,
 	/* program name */      "StriplineHER",
 	/* channels */          seqg_chans,
-	/* num. channels */     7,
+	/* num. channels */     3,
 	/* state sets */        seqg_statesets,
 	/* num. state sets */   1,
 	/* user var size */     0,

@@ -7,33 +7,20 @@ program StriplineHER
 %%#include <math.h>
 %%#include <unistd.h>
 %%#include "MT.h"
-%%#include "hartmann6d.h"
 
-double X0, X1, X2, X3, X4, X5, Y;
+double TESTX, TESTY, TESTZ;
 /*--- HER (D8) ---*/
-assign X0 to "TEST:X0";
-assign X1 to "TEST:X1";
-assign X2 to "TEST:X2";
-assign X3 to "TEST:X3";
-assign X4 to "TEST:X4";
-assign X5 to "TEST:X5";
-assign Y  to "TEST:Y";
+assign TESTX to "TEST:X";
+assign TESTY to "TEST:Y";
+assign TESTZ to "TEST:Z";
 
-monitor X0;
-monitor X1;
-monitor X2;
-monitor X3;
-monitor X4;
-monitor X5;
+monitor TESTX;
+monitor TESTY;
 
 %{
-  double x0;
-  double x1;
-  double x2;
-  double x3;
-  double x4;
-  double x5;
-  double y;
+  double testx;
+  double testy;
+  double testz;
 
   double Uniform(void)
   {
@@ -42,8 +29,8 @@ monitor X5;
 
   double rand_Lnormal(double mu, double sigma)
   {
-    double y= mu + sigma*sqrt(-2.0*log(Uniform()))*sin(2.0*M_PI*Uniform());//gauss random number
-    return exp(y);
+    double z= mu + sigma*sqrt(-2.0*log(Uniform()))*sin(2.0*M_PI*Uniform());//gauss random number
+    return exp(z);
   }
 }%
 
@@ -52,46 +39,38 @@ ss her_stripline {
   /*--- Initialization ---*/
   state init {
     when ()
-      {
-	pvGet(X0);
-	pvGet(X1);
-	pvGet(X2);
-	pvGet(X3);
-	pvGet(X4);
-	pvGet(X5);
+    {
+      pvGet(TESTX);
+      pvGet(TESTY);
 
-	printf("StriplineHER initialization done.\n");
+      printf("StriplineHER initialization done.\n");
 
-	%{
-	  init_genrand((unsigned)time(NULL));
-	}%
-	   }
+      %{
+        init_genrand((unsigned)time(NULL));
+      }%
+    }
     state fit
-      }
+  }
 
   /*--- Fit ---*/
   state fit {
     when ()
-      {
-	x0 = X0;
-	x1 = X1;
-	x2 = X2;
-	x3 = X3;
-	x4 = X4;
-	x5 = X5;
+    {
+      testx = TESTX;
+      testy = TESTY;
 
-	%{
-	  y  = hartmann6d(x0, x1, x2, x3, x4, x5);
-	  y += rand_Lnormal(0., 1.e-3);
-	}%
+      %{
+	testz = pow(testx - 1., 2.) + 100 * pow(testy - pow(testx,2.),2.) + rand_Lnormal(0., 1.e-3);
+	//testz = pow(testy - 5.1/(4.*pow(M_PI,2.)) * pow(testx,2.) + 5./M_PI * testx - 6., 2.) + 10 * (1. - 1./(8.*M_PI)) * cos(testx) + 10.;
+      }%
 
-	   Y = y;
-	   pvPut(Y);
+      TESTZ = testz;
+      pvPut(TESTZ);
 
-	   %{
-	     usleep(0.01e+6);
-	   }%
-	      }
+      %{
+        usleep(0.1e+6);
+      }%
+    }
     state fit
-      }
+  }
 }
